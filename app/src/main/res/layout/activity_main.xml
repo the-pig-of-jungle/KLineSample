@@ -5,8 +5,24 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".MainActivity">
-    <com.github.mikephil.charting.charts.CombinedChart
+    <com.idwzx.klinedemo.EasyCombinedChart
         android:layout_width="match_parent"
         android:layout_height="300dp"
         android:id="@+id/combine_chart"/>
+    <RelativeLayout
+        android:layout_below="@id/combine_chart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            tools:text="2015/01/08"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/start_date"/>
+        <TextView
+            android:layout_alignParentRight="true"
+            tools:text="2015/01/08"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/end_date"/>
+    </RelativeLayout>
 </RelativeLayout>
