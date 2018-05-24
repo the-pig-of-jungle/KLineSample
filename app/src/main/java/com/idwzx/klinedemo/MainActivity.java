@@ -97,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
                     return value + "";
                 }
             }
+
         });
 
         left.setDrawZeroLine(false);
@@ -290,6 +291,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         mCombinedChart.setHighlightPerTapEnabled(false);
+        mCombinedChart.setHighlightPerDragEnabled(true);
 
         mCombinedChart.setOnChartGestureListener(new OnChartGestureListener() {
             @Override
@@ -384,6 +386,8 @@ public class MainActivity extends AppCompatActivity {
             public String getFormattedValue(float value, AxisBase axis) {
                 return "";
             }
+
+
         });
     }
 
