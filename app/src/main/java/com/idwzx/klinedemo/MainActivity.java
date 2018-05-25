@@ -1,17 +1,21 @@
 package com.idwzx.klinedemo;
 
+import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.MotionEvent;
 import android.widget.TextView;
 
+import com.github.mikephil.charting.charts.CandleStickChart;
 import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Description;
+import com.github.mikephil.charting.components.IMarker;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
@@ -25,6 +29,7 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
+import com.github.mikephil.charting.formatter.IValueFormatter;
 import com.github.mikephil.charting.highlight.CombinedHighlighter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
@@ -32,6 +37,7 @@ import com.github.mikephil.charting.listener.ChartTouchListener;
 import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnDrawListener;
 import com.github.mikephil.charting.renderer.XAxisRenderer;
+import com.github.mikephil.charting.utils.MPPointF;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.google.gson.reflect.TypeToken;
 import com.idwzx.klinedemo.bean.DataParse;
@@ -47,12 +53,14 @@ import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private CombinedChart mCombinedChart;
+    private EasyCombinedChart mCombinedChart;
 
     private TextView mStartDate;
     private TextView mEndDate;
 
     private List<KLineEntity> mKLineEntities;
+
+    private List<CandleEntry> mCandleEntries;
 
 
     @Override
@@ -64,8 +72,8 @@ public class MainActivity extends AppCompatActivity {
         mStartDate = findViewById(R.id.start_date);
         mEndDate = findViewById(R.id.end_date);
 
-        mCombinedChart.setScaleYEnabled(false);
 
+        mCombinedChart.setScaleYEnabled(false);
 
 
         mCombinedChart.setAutoScaleMinMaxEnabled(true);
@@ -83,21 +91,16 @@ public class MainActivity extends AppCompatActivity {
         YAxis left = mCombinedChart.getAxisLeft();
 
 
-
         left.setDrawGridLines(true);
 
         left.setDrawAxisLine(false);
 
-        left.setValueFormatter(new IAxisValueFormatter() {
-            @Override
-            public String getFormattedValue(float value, AxisBase axis) {
-                if (value == axis.getAxisMaximum() || value == axis.getAxisMinimum()){
-                    return "";
-                }else {
-                    return value + "";
-                }
-            }
 
+        left.setValueFormatter(new EasyYAxisValueFormatter(mCombinedChart) {
+            @Override
+            public String getEasyFormattedValue(float value, AxisBase axis) {
+                return value + "";
+            }
         });
 
         left.setDrawZeroLine(false);
@@ -129,7 +132,7 @@ public class MainActivity extends AppCompatActivity {
 
         mKLineEntities = lineEntities;
 
-        initXAxis(lineEntities);
+
         List<CandleEntry> candleEntryList = new ArrayList<>();
 
         List<Entry> lineEntry = new ArrayList<>();
@@ -230,16 +233,24 @@ public class MainActivity extends AppCompatActivity {
 
         LineData lineData = new LineData(lineDataSet);
 
+        candleEntryList.get(0).setHigh(130000);
 
+
+        mCandleEntries = candleEntryList;
         CandleDataSet candleDataSet = new CandleDataSet(candleEntryList, "");
-
+        initXAxis(lineEntities);
         candleDataSet.setShowCandleBar(true);
         candleDataSet.setShadowColor(Color.parseColor("#ff00ff"));
+
+
+        candleDataSet.setDrawValues(false);
+
+
 
         candleDataSet.setDrawHorizontalHighlightIndicator(false);
 
 
-        candleDataSet.setDrawValues(false);
+
 
 
         candleDataSet.setHighLightColor(Color.parseColor("#323232"));
@@ -266,28 +277,9 @@ public class MainActivity extends AppCompatActivity {
         handler.setMaximumScaleX(9f);
 
 
+
+
         mCombinedChart.setData(combinedData);
-
-
-
-
-
-        mCombinedChart.setOnDrawListener(new OnDrawListener() {
-            @Override
-            public void onEntryAdded(Entry entry) {
-
-            }
-
-            @Override
-            public void onEntryMoved(Entry entry) {
-
-            }
-
-            @Override
-            public void onDrawFinished(DataSet<?> dataSet) {
-
-            }
-        });
 
 
         mCombinedChart.setHighlightPerTapEnabled(false);
@@ -296,18 +288,13 @@ public class MainActivity extends AppCompatActivity {
         mCombinedChart.setOnChartGestureListener(new OnChartGestureListener() {
             @Override
             public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
-
+                mCombinedChart.highlightValue(null);
             }
 
             @Override
             public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
                 mCombinedChart.setDragEnabled(true);
-                Highlight highlight = mCombinedChart.getHighlightByTouchPoint(0, 0);
-                int index = (int) highlight.getX();
-
-                Log.d("main",index + "");
-
-                mStartDate.setText(mKLineEntities.get(index % mKLineEntities.size()).getDate());
+                mCombinedChart.highlightValue(null);
             }
 
             @Override
@@ -324,18 +311,14 @@ public class MainActivity extends AppCompatActivity {
 
             @Override
             public void onChartSingleTapped(MotionEvent me) {
-                Highlight[] highlights = mCombinedChart.getHighlighted();
-                if (highlights == null) {
-                    Highlight highlight = mCombinedChart.getHighlightByTouchPoint(me.getX(), me.getY());
-                    mCombinedChart.highlightValue(highlight);
-                } else {
-                    mCombinedChart.highlightValue(null);
-                }
+
             }
 
             @Override
             public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
-                me1.toString();
+                mCombinedChart.highlightValue(null);
+                mCombinedChart.setDragEnabled(true);
+
             }
 
             @Override
@@ -353,14 +336,46 @@ public class MainActivity extends AppCompatActivity {
 
         mCombinedChart.setDoubleTapToZoomEnabled(false);
 
+        mCombinedChart.setMarker(new IMarker() {
+            @Override
+            public MPPointF getOffset() {
+
+                Highlight[] highlights = mCombinedChart.getHighlighted();
+                Log.d("main",highlights + "");
+                MPPointF mpPointF = new MPPointF(mCombinedChart.getViewPortHandler().contentLeft(),0);
+                return mpPointF;
+            }
+
+            @Override
+            public MPPointF getOffsetForDrawingAtPoint(float posX, float posY) {
+                return null;
+            }
+
+            @Override
+            public void refreshContent(Entry e, Highlight highlight) {
+
+            }
+
+            @Override
+            public void draw(Canvas canvas, float posX, float posY) {
+                canvas.drawText("123",0,mCombinedChart.getTouchY(),new Paint(Paint.ANTI_ALIAS_FLAG));
+            }
+        });
+
+        mCombinedChart.setDrawMarkers(true);
+
+
+
 
         mCombinedChart.animateXY(1000, 1000);
+
+
 
 
     }
 
     private void initXAxis(final List<KLineEntity> lineEntities) {
-        XAxis xAxis = mCombinedChart.getXAxis();
+        final XAxis xAxis = mCombinedChart.getXAxis();
 
         xAxis.setDrawLabels(true);
 
@@ -369,26 +384,26 @@ public class MainActivity extends AppCompatActivity {
 
         xAxis.setDrawAxisLine(false);
 
-        xAxis.setDrawLabels(true);
+        xAxis.setDrawLabels(false);
 
-        xAxis.setLabelCount(4);
+        xAxis.setLabelCount(2, true);
+
         xAxis.setAxisMinimum(-0.5f);
 
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
 
+        xAxis.setAxisMaximum(mCandleEntries.size() - 0.5f);
+
         xAxis.setAvoidFirstLastClipping(true);
 
-        xAxis.setAxisMaximum(mKLineEntities.size() * 6 - 0.5f);
-
         xAxis.setValueFormatter(new IAxisValueFormatter() {
-
             @Override
             public String getFormattedValue(float value, AxisBase axis) {
-                return "";
+
+                return mKLineEntities.get(((int) value) % mKLineEntities.size()).getDate();
             }
-
-
         });
+
     }
 
 
