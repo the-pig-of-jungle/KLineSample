@@ -247,7 +247,11 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        candleDataSet.setDrawHorizontalHighlightIndicator(false);
+
+
+        candleDataSet.setDrawHorizontalHighlightIndicator(true);
+
+
 
 
 
