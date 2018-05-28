@@ -8,27 +8,27 @@ public class KLineEntity {
 
    
     public float getOpenPrice() {
-        return Open ;
+        return Open / 10000 ;
     }
 
    
     public float getHighPrice() {
-        return High;
+        return High / 10000;
     }
 
    
     public float getLowPrice() {
-        return Low;
+        return Low / 10000;
     }
 
    
     public float getClosePrice() {
-        return Close;
+        return Close / 10000;
     }
 
    
     public float getMA5Price() {
-        return MA5Price;
+        return MA5Price / 10000;
     }
 
    

@@ -13,12 +13,12 @@ public abstract class EasyYAxisValueFormatter implements IAxisValueFormatter {
     @Override
     public String getFormattedValue(float value, AxisBase axis) {
         String str = getEasyFormattedValue(value,axis);
-        if (value == axis.getAxisMinimum()){
+        if (value <= axis.mEntries[0]){
             mEasyCombinedChart.setStartYLabel(str);
             return "";
         }
 
-        if (value == axis.getAxisMaximum()){
+        if (value >= axis.mEntries[3]){
             mEasyCombinedChart.setEndYLabel(str);
             return "";
         }

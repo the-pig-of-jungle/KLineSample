@@ -61,8 +61,8 @@ public class EasyCombinedChart extends CombinedChart {
 
 
     private void drawYLabel(Canvas canvas, float marginTop, float marginBottom, float vAdded, float marginLeft, float hAdded) {
-        canvas.drawText(mStartYLabel,marginLeft + hAdded,getHeight() - marginBottom - vAdded,getYLabelPaint());
-        canvas.drawText(mEndYLabel,marginLeft + hAdded,marginTop + getYLabelPaint().getTextSize(),getYLabelPaint());
+        canvas.drawText(getStartYLabel(),marginLeft + hAdded,getHeight() - marginBottom - vAdded,getYLabelPaint());
+        canvas.drawText(getEndYLabel(),marginLeft + hAdded,marginTop + getYLabelPaint().getTextSize(),getYLabelPaint());
     }
 
     private void drawXLabel(Canvas canvas, float marginBottom, float marginLeft, float marginRight) {

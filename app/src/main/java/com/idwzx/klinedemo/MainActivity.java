@@ -30,6 +30,7 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.formatter.IValueFormatter;
+import com.github.mikephil.charting.highlight.ChartHighlighter;
 import com.github.mikephil.charting.highlight.CombinedHighlighter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
@@ -69,8 +70,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         mCombinedChart = findViewById(R.id.combine_chart);
 
-        mStartDate = findViewById(R.id.start_date);
-        mEndDate = findViewById(R.id.end_date);
 
 
         mCombinedChart.setScaleYEnabled(false);
@@ -233,7 +232,7 @@ public class MainActivity extends AppCompatActivity {
 
         LineData lineData = new LineData(lineDataSet);
 
-        candleEntryList.get(0).setHigh(130000);
+        candleEntryList.get(0).setHigh(13);
 
 
         mCandleEntries = candleEntryList;
@@ -249,7 +248,9 @@ public class MainActivity extends AppCompatActivity {
 
 
 
-        candleDataSet.setDrawHorizontalHighlightIndicator(true);
+        candleDataSet.setDrawHorizontalHighlightIndicator(false);
+
+        mCombinedChart.setHighlightFullBarEnabled(false);
 
 
 
@@ -266,7 +267,7 @@ public class MainActivity extends AppCompatActivity {
         candleDataSet.setShadowColorSameAsCandle(true);
 
 
-        CandleData candleData = new CandleData(candleDataSet);
+        final CandleData candleData = new CandleData(candleDataSet);
 
 
         CombinedData combinedData = new CombinedData();
@@ -340,33 +341,44 @@ public class MainActivity extends AppCompatActivity {
 
         mCombinedChart.setDoubleTapToZoomEnabled(false);
 
+
+        mCombinedChart.setDrawMarkers(true);
         mCombinedChart.setMarker(new IMarker() {
+
+            Entry mEntry;
             @Override
             public MPPointF getOffset() {
 
-                Highlight[] highlights = mCombinedChart.getHighlighted();
-                Log.d("main",highlights + "");
-                MPPointF mpPointF = new MPPointF(mCombinedChart.getViewPortHandler().contentLeft(),0);
+
+                MPPointF mpPointF = new MPPointF(-(mCombinedChart.getWidth() / 2),-(mCombinedChart.getHeight() / 2));
                 return mpPointF;
             }
 
             @Override
             public MPPointF getOffsetForDrawingAtPoint(float posX, float posY) {
-                return null;
+
+                return getOffset();
             }
 
             @Override
             public void refreshContent(Entry e, Highlight highlight) {
-
+                mEntry = e;
             }
 
             @Override
             public void draw(Canvas canvas, float posX, float posY) {
-                canvas.drawText("123",0,mCombinedChart.getTouchY(),new Paint(Paint.ANTI_ALIAS_FLAG));
+                Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                paint.setTextSize(mCombinedChart.getAxisLeft().getTextSize());
+                paint.setStrokeWidth(mCombinedChart.getData().getCandleData().getDataSetByIndex(0).getHighlightLineWidth());
+                if (mCombinedChart.getTouchY() <= mCombinedChart.getViewPortHandler().contentBottom() ){
+                    canvas.drawLine(mCombinedChart.getViewPortHandler().contentLeft(),mCombinedChart.getTouchY(),mCombinedChart.getViewPortHandler().contentRight(),mCombinedChart.getTouchY(),paint);
+                    canvas.drawText(mCombinedChart.getValuesByTouchPoint(mCombinedChart.getTouchX(),mCombinedChart.getTouchY(), YAxis.AxisDependency.LEFT).y + "",
+                            mCombinedChart.getViewPortHandler().contentLeft(),mCombinedChart.getTouchY(),paint);
+                }
             }
         });
 
-        mCombinedChart.setDrawMarkers(true);
+
 
 
 
