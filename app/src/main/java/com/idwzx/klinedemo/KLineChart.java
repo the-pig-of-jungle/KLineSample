@@ -6,14 +6,18 @@ import android.graphics.Canvas;
 import android.graphics.Paint;
 
 import android.util.AttributeSet;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.MotionEvent;
 
 
 import com.github.mikephil.charting.charts.CombinedChart;
 
+import java.util.ArrayList;
+import java.util.List;
 
-public class EasyCombinedChart extends CombinedChart {
+
+public class KLineChart extends BaseCombinedChart {
 
     private Paint mXLabelPaint;
 
@@ -23,16 +27,21 @@ public class EasyCombinedChart extends CombinedChart {
 
     private Paint mYLabelPaint;
 
-    public EasyCombinedChart(Context context) {
+    public KLineChart(Context context) {
         super(context);
     }
 
-    public EasyCombinedChart(Context context, AttributeSet attrs) {
+    public KLineChart(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 
-    public EasyCombinedChart(Context context, AttributeSet attrs, int defStyle) {
+    public KLineChart(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs, defStyle);
+    }
+
+    @Override
+    public float transferToUnionTouchY(BaseCombinedChart chart,float srcTouchY) {
+        return srcTouchY - getHeight();
     }
 
 
@@ -56,6 +65,7 @@ public class EasyCombinedChart extends CombinedChart {
         drawYLabel(canvas, marginTop, marginBottom, vAdded, marginLeft, hAdded);
 
         drawXLabel(canvas, marginBottom, marginLeft, marginRight);
+
 
     }
 
@@ -101,37 +111,6 @@ public class EasyCombinedChart extends CombinedChart {
     }
 
 
-    private float mTouchX;
-    private float mTouchY;
-    @Override
-    public boolean onTouchEvent(MotionEvent event) {
-        int action = event.getAction() & MotionEvent.ACTION_MASK;
-
-        switch (action){
-            case MotionEvent.ACTION_DOWN:
-            case MotionEvent.ACTION_MOVE:
-                mTouchX = event.getX();
-                mTouchY = event.getY();
-                break;
-        }
-        boolean consumed = super.onTouchEvent(event);
-
-
-        if (action == MotionEvent.ACTION_UP){
-            highlightValue(null);
-            setDragEnabled(true);
-        }
-
-        return consumed;
-    }
-
-    public float getTouchX() {
-        return mTouchX;
-    }
-
-    public float getTouchY() {
-        return mTouchY;
-    }
 
     private String ensureNotNull(String str) {
         return str == null ? "" : str;
@@ -160,6 +139,5 @@ public class EasyCombinedChart extends CombinedChart {
     public float getMinOffsetPx(){
         return dp2px(getMinOffset());
     }
-
 
 }

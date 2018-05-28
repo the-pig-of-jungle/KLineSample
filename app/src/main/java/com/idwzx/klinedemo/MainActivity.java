@@ -3,58 +3,43 @@ package com.idwzx.klinedemo;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.util.Log;
-import android.util.TypedValue;
-import android.view.MotionEvent;
 import android.widget.TextView;
 
-import com.github.mikephil.charting.charts.CandleStickChart;
-import com.github.mikephil.charting.charts.CombinedChart;
 import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.IMarker;
 import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.CandleData;
 import com.github.mikephil.charting.data.CandleDataSet;
 import com.github.mikephil.charting.data.CandleEntry;
 import com.github.mikephil.charting.data.CombinedData;
-import com.github.mikephil.charting.data.DataSet;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
-import com.github.mikephil.charting.formatter.IValueFormatter;
-import com.github.mikephil.charting.highlight.ChartHighlighter;
-import com.github.mikephil.charting.highlight.CombinedHighlighter;
 import com.github.mikephil.charting.highlight.Highlight;
-import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-import com.github.mikephil.charting.listener.ChartTouchListener;
-import com.github.mikephil.charting.listener.OnChartGestureListener;
-import com.github.mikephil.charting.listener.OnDrawListener;
-import com.github.mikephil.charting.renderer.XAxisRenderer;
+import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 import com.github.mikephil.charting.utils.MPPointF;
+import com.github.mikephil.charting.utils.Utils;
 import com.github.mikephil.charting.utils.ViewPortHandler;
 import com.google.gson.reflect.TypeToken;
-import com.idwzx.klinedemo.bean.DataParse;
 import com.idwzx.klinedemo.bean.DataTest;
 import com.idwzx.klinedemo.bean.KLineEntity;
-import com.idwzx.klinedemo.common.ConstantTest;
-
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class MainActivity extends AppCompatActivity {
 
-    private EasyCombinedChart mCombinedChart;
+    private KLineChart mCombinedChart;
+    private VolumeOrAmountChart mVolumeChart;
 
     private TextView mStartDate;
     private TextView mEndDate;
@@ -69,7 +54,6 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         mCombinedChart = findViewById(R.id.combine_chart);
-
 
 
         mCombinedChart.setScaleYEnabled(false);
@@ -120,6 +104,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         YAxis right = mCombinedChart.getAxisRight();
+
 
         right.setEnabled(false);
 
@@ -245,17 +230,9 @@ public class MainActivity extends AppCompatActivity {
         candleDataSet.setDrawValues(false);
 
 
-
-
-
         candleDataSet.setDrawHorizontalHighlightIndicator(false);
 
         mCombinedChart.setHighlightFullBarEnabled(false);
-
-
-
-
-
 
 
         candleDataSet.setHighLightColor(Color.parseColor("#323232"));
@@ -280,77 +257,61 @@ public class MainActivity extends AppCompatActivity {
         final ViewPortHandler handler = mCombinedChart.getViewPortHandler();
 
         handler.setMaximumScaleX(9f);
-
-
+        handler.getMatrixTouch().postScale(4f, 1f);
 
 
         mCombinedChart.setData(combinedData);
+        mCombinedChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(Entry e, Highlight h) {
+                mVolumeChart.highlightValue(mVolumeChart.getHighlightByTouchPoint(mCombinedChart.getTouchX(),mCombinedChart.getTouchY() - mCombinedChart.getHeight()));
+            }
+
+            @Override
+            public void onNothingSelected() {
+
+            }
+        });
 
 
         mCombinedChart.setHighlightPerTapEnabled(false);
         mCombinedChart.setHighlightPerDragEnabled(true);
 
-        mCombinedChart.setOnChartGestureListener(new OnChartGestureListener() {
+        mVolumeChart = findViewById(R.id.volume_chart);
+
+
+
+
+        mCombinedChart.setOnChartGestureListener(new UnionChartGestureListener(mCombinedChart,new BaseCombinedChart[]{mVolumeChart}));
+
+        mCombinedChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
             @Override
-            public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
-                mCombinedChart.highlightValue(null);
+            public void onValueSelected(Entry e, Highlight h) {
+                mVolumeChart.highlightValue(mVolumeChart.getHighlightByTouchPoint(mCombinedChart.getTouchX(),0));
             }
 
             @Override
-            public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
-                mCombinedChart.setDragEnabled(true);
-                mCombinedChart.highlightValue(null);
-            }
-
-            @Override
-            public void onChartLongPressed(MotionEvent me) {
-                Highlight highlight = mCombinedChart.getHighlightByTouchPoint(me.getX(), me.getY());
-                mCombinedChart.highlightValue(highlight);
-                mCombinedChart.setDragEnabled(false);
-            }
-
-            @Override
-            public void onChartDoubleTapped(MotionEvent me) {
-
-            }
-
-            @Override
-            public void onChartSingleTapped(MotionEvent me) {
-
-            }
-
-            @Override
-            public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
-                mCombinedChart.highlightValue(null);
-                mCombinedChart.setDragEnabled(true);
-
-            }
-
-            @Override
-            public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
-
-            }
-
-            @Override
-            public void onChartTranslate(MotionEvent me, float dX, float dY) {
-                mCombinedChart.highlightValue(null);
-
+            public void onNothingSelected() {
+                mVolumeChart.highlightValue(null);
             }
         });
+
 
 
         mCombinedChart.setDoubleTapToZoomEnabled(false);
 
 
         mCombinedChart.setDrawMarkers(true);
+
         mCombinedChart.setMarker(new IMarker() {
 
             Entry mEntry;
+
             @Override
             public MPPointF getOffset() {
 
 
-                MPPointF mpPointF = new MPPointF(-(mCombinedChart.getWidth() / 2),-(mCombinedChart.getHeight() / 2));
+                MPPointF mpPointF = new MPPointF(-(mCombinedChart.getWidth() / 2), -(mCombinedChart.getHeight() / 2));
                 return mpPointF;
             }
 
@@ -370,24 +331,146 @@ public class MainActivity extends AppCompatActivity {
                 Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
                 paint.setTextSize(mCombinedChart.getAxisLeft().getTextSize());
                 paint.setStrokeWidth(mCombinedChart.getData().getCandleData().getDataSetByIndex(0).getHighlightLineWidth());
-                if (mCombinedChart.getTouchY() <= mCombinedChart.getViewPortHandler().contentBottom() ){
-                    canvas.drawLine(mCombinedChart.getViewPortHandler().contentLeft(),mCombinedChart.getTouchY(),mCombinedChart.getViewPortHandler().contentRight(),mCombinedChart.getTouchY(),paint);
-                    canvas.drawText(mCombinedChart.getValuesByTouchPoint(mCombinedChart.getTouchX(),mCombinedChart.getTouchY(), YAxis.AxisDependency.LEFT).y + "",
-                            mCombinedChart.getViewPortHandler().contentLeft(),mCombinedChart.getTouchY(),paint);
+                if (mCombinedChart.getTouchY() <= mCombinedChart.getViewPortHandler().contentBottom()) {
+                    canvas.drawLine(mCombinedChart.getViewPortHandler().contentLeft(), mCombinedChart.getTouchY(), mCombinedChart.getViewPortHandler().contentRight(), mCombinedChart.getTouchY(), paint);
+                    canvas.drawText(mCombinedChart.getValuesByTouchPoint(mCombinedChart.getTouchX(), mCombinedChart.getTouchY(), YAxis.AxisDependency.LEFT).y + "",
+                            mCombinedChart.getViewPortHandler().contentLeft(), mCombinedChart.getTouchY(), paint);
                 }
+
             }
         });
-
-
-
-
 
 
         mCombinedChart.animateXY(1000, 1000);
 
 
+        mVolumeChart = findViewById(R.id.volume_chart);
+
+        mVolumeChart.setScaleEnabled(true);
+        mVolumeChart.setScaleYEnabled(false);
+        mVolumeChart.setAutoScaleMinMaxEnabled(true);
+        mVolumeChart.setDrawBorders(true);
+        mVolumeChart.setBorderWidth(1);
+        mVolumeChart.setDrawMarkers(true);
+        mVolumeChart.setHighlightPerDragEnabled(true);
+        mVolumeChart.setHighlightPerTapEnabled(true);
+        mVolumeChart.setDoubleTapToZoomEnabled(false);
+
+        mVolumeChart.getViewPortHandler().setMaximumScaleX(9f);
+        mVolumeChart.getViewPortHandler().getMatrixTouch().postScale(4f, 1f);
+        Description volumeDescription = new Description();
+        volumeDescription.setText("");
+        mVolumeChart.setDescription(volumeDescription);
+        mVolumeChart.getLegend().setEnabled(false);
+        YAxis volumeLeft = mVolumeChart.getAxisLeft();
+        volumeLeft.setAxisMinimum(0);
+        volumeLeft.setLabelCount(3, true);
+
+        volumeLeft.setPosition(YAxis.YAxisLabelPosition.INSIDE_CHART);
+        volumeLeft.setDrawAxisLine(false);
+        volumeLeft.setDrawGridLines(true);
+        volumeLeft.setDrawLabels(false);
+        volumeLeft.enableGridDashedLine(2, 2, 0);
+
+        mVolumeChart.getAxisRight().setEnabled(false);
 
 
+        XAxis volumeXAxis = mVolumeChart.getXAxis();
+
+
+        volumeXAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        volumeXAxis.setDrawLabels(true);
+
+        volumeXAxis.setAxisMinimum(-0.5f);
+        volumeXAxis.setAxisMaximum(mCandleEntries.size() - 0.5f);
+
+        volumeXAxis.setDrawAxisLine(false);
+
+
+        volumeXAxis.setDrawGridLines(false);
+
+
+        volumeXAxis.setXOffset(1);
+        final List<BarEntry> barEntries = new ArrayList<>();
+        for (int i = 0; i < mCandleEntries.size(); i++) {
+            BarEntry barEntry = new BarEntry(i, 100);
+            barEntries.add(barEntry);
+        }
+        BarDataSet barDataSet = new BarDataSet(barEntries, "");
+        barDataSet.setHighlightEnabled(true);
+        barDataSet.setHighLightAlpha(0);
+
+
+        BarData barData = new BarData(barDataSet);
+        barData.setDrawValues(false);
+
+
+
+
+
+
+
+
+
+        CombinedData volumeChartData = new CombinedData();
+        volumeChartData.setData(barData);
+        mVolumeChart.setData(volumeChartData);
+        mVolumeChart.setLeftLabel("成交量");
+        mVolumeChart.setOnChartGestureListener(new UnionChartGestureListener(mVolumeChart,new BaseCombinedChart[]{mCombinedChart}));
+
+        mVolumeChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
+            @Override
+            public void onValueSelected(Entry e, Highlight h) {
+                mCombinedChart.highlightValue(mCombinedChart.getHighlightByTouchPoint(mVolumeChart.getTouchX(),0));
+            }
+
+            @Override
+            public void onNothingSelected() {
+                mCombinedChart.highlightValue(null);
+            }
+        });
+        mCombinedChart.addUnionChart(mVolumeChart);
+
+        mVolumeChart.setLeftLabelSize(Utils.convertDpToPixel(14f));
+        mVolumeChart.setLeftLabelColor(Color.parseColor("#323232"));
+        mVolumeChart.setMarker(new IMarker() {
+            @Override
+            public MPPointF getOffset() {
+                return null;
+            }
+
+            @Override
+            public MPPointF getOffsetForDrawingAtPoint(float posX, float posY) {
+                return null;
+            }
+
+            @Override
+            public void refreshContent(Entry e, Highlight highlight) {
+
+            }
+
+            @Override
+            public void draw(Canvas canvas, float posX, float posY) {
+
+                Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+                paint.setTextSize(mVolumeChart.getAxisLeft().getTextSize());
+                paint.setStrokeWidth(mCombinedChart.getData().getCandleData().getDataSets().get(0).getHighlightLineWidth());
+
+                canvas.drawLine(mVolumeChart.getViewPortHandler().contentLeft(), mVolumeChart.getTouchY(), mVolumeChart.getViewPortHandler().contentRight(), mVolumeChart.getTouchY(), paint);
+                canvas.drawLine(posX, mVolumeChart.getViewPortHandler().contentTop(), posX, mVolumeChart.getViewPortHandler().contentBottom(), paint);
+                canvas.drawText(mVolumeChart.getValuesByTouchPoint(mVolumeChart.getTouchX(), mVolumeChart.getTouchY(), YAxis.AxisDependency.LEFT).y + "",
+                        mVolumeChart.getViewPortHandler().contentLeft(), mVolumeChart.getTouchY(), paint);
+
+            }
+        });
+        volumeXAxis.setLabelCount(2,true);
+        volumeXAxis.setAxisMinimum(-0.5f);
+        volumeXAxis.setDrawLabels(false);
+
+        volumeXAxis.setAxisMaximum(mCandleEntries.size() - 0.5f);
+
+        mVolumeChart.addUnionChart(mCombinedChart);
+        mVolumeChart.animateXY(1000, 1000);
     }
 
     private void initXAxis(final List<KLineEntity> lineEntities) {

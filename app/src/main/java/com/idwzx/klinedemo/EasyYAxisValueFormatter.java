@@ -4,22 +4,22 @@ import com.github.mikephil.charting.components.AxisBase;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 
 public abstract class EasyYAxisValueFormatter implements IAxisValueFormatter {
-    private EasyCombinedChart mEasyCombinedChart;
+    private KLineChart mKLineChart;
 
-    public EasyYAxisValueFormatter(EasyCombinedChart easyCombinedChart) {
-        mEasyCombinedChart = easyCombinedChart;
+    public EasyYAxisValueFormatter(KLineChart KLineChart) {
+        mKLineChart = KLineChart;
     }
 
     @Override
     public String getFormattedValue(float value, AxisBase axis) {
         String str = getEasyFormattedValue(value,axis);
         if (value <= axis.mEntries[0]){
-            mEasyCombinedChart.setStartYLabel(str);
+            mKLineChart.setStartYLabel(str);
             return "";
         }
 
         if (value >= axis.mEntries[3]){
-            mEasyCombinedChart.setEndYLabel(str);
+            mKLineChart.setEndYLabel(str);
             return "";
         }
         return str;
