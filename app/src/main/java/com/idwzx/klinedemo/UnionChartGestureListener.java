@@ -18,23 +18,29 @@ public class UnionChartGestureListener implements OnChartGestureListener {
     private static final String TAG = UnionChartGestureListener.class.getSimpleName();
 
     private BaseCombinedChart mSrcChart;
-    private BaseCombinedChart[] mChartsOfUnion;
+    private BaseCombinedChart[] mUnionCharts;
 
-    public UnionChartGestureListener(BaseCombinedChart srcChart, BaseCombinedChart[] chartsOfUnion) {
+    public UnionChartGestureListener(BaseCombinedChart srcChart, BaseCombinedChart[] unionCharts) {
         this.mSrcChart = srcChart;
-        this.mChartsOfUnion = chartsOfUnion;
+        this.mUnionCharts = unionCharts;
     }
 
     @Override
     public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
-        mSrcChart.highlightValue(null);
+        mSrcChart.highlightValue(null,true);
         syncCharts();
     }
 
     @Override
     public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
-        mSrcChart.setDragEnabled(true);
-        mSrcChart.highlightValue(null,true);
+        if (!mSrcChart.isLongPressing()){
+            mSrcChart.setDragEnabled(true);
+            for (int index = 0;index < mUnionCharts.length;index++){
+                mUnionCharts[index].setDragEnabled(true);
+            }
+            mSrcChart.highlightValue(null,true);
+        }
+
         syncCharts();
     }
 
@@ -43,6 +49,10 @@ public class UnionChartGestureListener implements OnChartGestureListener {
         Highlight highlight = mSrcChart.getHighlightByTouchPoint(me.getX(), me.getY());
         mSrcChart.highlightValue(highlight, true);
         mSrcChart.setDragEnabled(false);
+
+        for (int index = 0;index < mUnionCharts.length;index++){
+            mUnionCharts[index].setDragEnabled(false);
+        }
         mSrcChart.setLongPressing(true);
         syncCharts();
     }
@@ -60,52 +70,54 @@ public class UnionChartGestureListener implements OnChartGestureListener {
     @Override
     public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
         mSrcChart.highlightValue(null,true);
-        mSrcChart.setDragEnabled(true);
         syncCharts();
     }
 
     @Override
     public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
 //        Log.d(TAG, "onChartScale " + scaleX + "/" + scaleY + " X=" + me.getX() + "Y=" + me.getY());
+
+        mSrcChart.highlightValue(null,true);
+
         syncCharts();
     }
 
     @Override
     public void onChartTranslate(MotionEvent me, float dX, float dY) {
 //        Log.d(TAG, "onChartTranslate " + dX + "/" + dY + " X=" + me.getX() + "Y=" + me.getY());
-        mSrcChart.highlightValue(null);
+        mSrcChart.highlightValue(null,true);
         syncCharts();
 
     }
 
     public void syncCharts() {
         Matrix srcMatrix;
-        float[] srcVals = new float[9];
+        float[] srcValues = new float[9];
         Matrix unionMatrix;
-        float[] dstVals = new float[9];
+        float[] unionValues = new float[9];
         // get src chart translation matrix:
         srcMatrix = mSrcChart.getViewPortHandler().getMatrixTouch();
-        srcMatrix.getValues(srcVals);
+        srcMatrix.getValues(srcValues);
         // apply X axis scaling and position to dst charts:
-        for (Chart dstChart : mChartsOfUnion) {
+        for (Chart dstChart : mUnionCharts) {
             if (dstChart == null) {
                 return;
             }
             if (dstChart.getVisibility() == View.VISIBLE) {
                 unionMatrix = dstChart.getViewPortHandler().getMatrixTouch();
-                unionMatrix.getValues(dstVals);
+                unionMatrix.getValues(unionValues);
 
-                dstVals[Matrix.MSCALE_X] = srcVals[Matrix.MSCALE_X];
-                dstVals[Matrix.MSKEW_X] = srcVals[Matrix.MSKEW_X];
-                dstVals[Matrix.MTRANS_X] = srcVals[Matrix.MTRANS_X];
-                dstVals[Matrix.MSKEW_Y] = srcVals[Matrix.MSKEW_Y];
-                dstVals[Matrix.MSCALE_Y] = srcVals[Matrix.MSCALE_Y];
-                dstVals[Matrix.MTRANS_Y] = srcVals[Matrix.MTRANS_Y];
-                dstVals[Matrix.MPERSP_0] = srcVals[Matrix.MPERSP_0];
-                dstVals[Matrix.MPERSP_1] = srcVals[Matrix.MPERSP_1];
-                dstVals[Matrix.MPERSP_2] = srcVals[Matrix.MPERSP_2];
+                unionValues[Matrix.MSCALE_X] = srcValues[Matrix.MSCALE_X];
+                unionValues[Matrix.MSKEW_X] = srcValues[Matrix.MSKEW_X];
+                unionValues[Matrix.MTRANS_X] = srcValues[Matrix.MTRANS_X];
+                unionValues[Matrix.MSKEW_Y] = srcValues[Matrix.MSKEW_Y];
+                unionValues[Matrix.MSCALE_Y] = srcValues[Matrix.MSCALE_Y];
+                unionValues[Matrix.MTRANS_Y] = srcValues[Matrix.MTRANS_Y];
+                unionValues[Matrix.MPERSP_0] = srcValues[Matrix.MPERSP_0];
+                unionValues[Matrix.MPERSP_1] = srcValues[Matrix.MPERSP_1];
+                unionValues[Matrix.MPERSP_2] = srcValues[Matrix.MPERSP_2];
 
-                unionMatrix.setValues(dstVals);
+                unionMatrix.setValues(unionValues);
                 dstChart.getViewPortHandler().refresh(unionMatrix, dstChart, true);
             }
         }

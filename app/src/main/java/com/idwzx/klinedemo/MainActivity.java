@@ -230,6 +230,8 @@ public class MainActivity extends AppCompatActivity {
         candleDataSet.setDrawValues(false);
 
 
+
+        candleDataSet.setHighlightLineWidth(1f);
         candleDataSet.setDrawHorizontalHighlightIndicator(false);
 
         mCombinedChart.setHighlightFullBarEnabled(false);
@@ -261,17 +263,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         mCombinedChart.setData(combinedData);
-        mCombinedChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
-            @Override
-            public void onValueSelected(Entry e, Highlight h) {
-                mVolumeChart.highlightValue(mVolumeChart.getHighlightByTouchPoint(mCombinedChart.getTouchX(),mCombinedChart.getTouchY() - mCombinedChart.getHeight()));
-            }
-
-            @Override
-            public void onNothingSelected() {
-
-            }
-        });
+        mCombinedChart.setOnChartValueSelectedListener(new ChartValueSelectedListener(mCombinedChart,
+                new BaseCombinedChart[]{mVolumeChart}));
 
 
         mCombinedChart.setHighlightPerTapEnabled(false);
@@ -341,6 +334,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
 
+        mCombinedChart.moveViewTo(candleEntryList.size() -1,0, YAxis.AxisDependency.LEFT);
         mCombinedChart.animateXY(1000, 1000);
 
 
@@ -418,17 +412,8 @@ public class MainActivity extends AppCompatActivity {
         mVolumeChart.setLeftLabel("成交量");
         mVolumeChart.setOnChartGestureListener(new UnionChartGestureListener(mVolumeChart,new BaseCombinedChart[]{mCombinedChart}));
 
-        mVolumeChart.setOnChartValueSelectedListener(new OnChartValueSelectedListener() {
-            @Override
-            public void onValueSelected(Entry e, Highlight h) {
-                mCombinedChart.highlightValue(mCombinedChart.getHighlightByTouchPoint(mVolumeChart.getTouchX(),0));
-            }
-
-            @Override
-            public void onNothingSelected() {
-                mCombinedChart.highlightValue(null);
-            }
-        });
+        mVolumeChart.setOnChartValueSelectedListener(new ChartValueSelectedListener(mVolumeChart,
+                new BaseCombinedChart[]{mCombinedChart}));
         mCombinedChart.addUnionChart(mVolumeChart);
 
         mVolumeChart.setLeftLabelSize(Utils.convertDpToPixel(14f));
@@ -453,7 +438,9 @@ public class MainActivity extends AppCompatActivity {
             public void draw(Canvas canvas, float posX, float posY) {
 
                 Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
+
                 paint.setTextSize(mVolumeChart.getAxisLeft().getTextSize());
+
                 paint.setStrokeWidth(mCombinedChart.getData().getCandleData().getDataSets().get(0).getHighlightLineWidth());
 
                 canvas.drawLine(mVolumeChart.getViewPortHandler().contentLeft(), mVolumeChart.getTouchY(), mVolumeChart.getViewPortHandler().contentRight(), mVolumeChart.getTouchY(), paint);
@@ -470,7 +457,7 @@ public class MainActivity extends AppCompatActivity {
         volumeXAxis.setAxisMaximum(mCandleEntries.size() - 0.5f);
 
         mVolumeChart.addUnionChart(mCombinedChart);
-        mVolumeChart.animateXY(1000, 1000);
+        mVolumeChart.animateXY(1000,1000);
     }
 
     private void initXAxis(final List<KLineEntity> lineEntities) {
