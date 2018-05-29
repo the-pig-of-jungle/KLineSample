@@ -346,6 +346,7 @@ public class MainActivity extends AppCompatActivity {
         BarDataSet barDataSet = new BarDataSet(barEntries, "");
         barDataSet.setHighlightEnabled(true);
         barDataSet.setBarBorderColor(Color.BLACK);
+        barDataSet.setBarBorderWidth(0.3f);
 
 
 
