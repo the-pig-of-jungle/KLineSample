@@ -30,9 +30,15 @@ public class VolumeOrAmountChart extends BaseCombinedChart {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+
+    }
+
+    @Override
+    protected void drawMarkers(Canvas canvas) {
         canvas.drawText(mLeftLabel,getViewPortHandler().contentLeft(),getViewPortHandler().contentTop() + getLeftLabelPaint().getTextSize(),getLeftLabelPaint());
         canvas.drawText(getAxisLeft().getFormattedLabel(2),getViewPortHandler().contentRight() - getRightLabelPaint().measureText(getAxisLeft().getFormattedLabel(2)),
                 getViewPortHandler().contentTop() + getRightLabelPaint().getTextSize(),getRightLabelPaint());
+        super.drawMarkers(canvas);
     }
 
     public String getLeftLabel() {

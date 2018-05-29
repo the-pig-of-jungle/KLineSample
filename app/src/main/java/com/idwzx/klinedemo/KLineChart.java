@@ -12,6 +12,7 @@ import android.view.MotionEvent;
 
 
 import com.github.mikephil.charting.charts.CombinedChart;
+import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,11 +21,6 @@ import java.util.List;
 public class KLineChart extends BaseCombinedChart {
 
     private Paint mXLabelPaint;
-
-    private String mStartYLabel;
-    private String mEndYLabel;
-
-
     private Paint mYLabelPaint;
 
     public KLineChart(Context context) {
@@ -48,6 +44,10 @@ public class KLineChart extends BaseCombinedChart {
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
+    }
+
+    @Override
+    protected void drawMarkers(Canvas canvas) {
 
         float minOffset = dp2px(getMinOffset());
 
@@ -65,14 +65,15 @@ public class KLineChart extends BaseCombinedChart {
         drawYLabel(canvas, marginTop, marginBottom, vAdded, marginLeft, hAdded);
 
         drawXLabel(canvas, marginBottom, marginLeft, marginRight);
-
-
+        super.drawMarkers(canvas);
     }
 
-
     private void drawYLabel(Canvas canvas, float marginTop, float marginBottom, float vAdded, float marginLeft, float hAdded) {
-        canvas.drawText(getStartYLabel(),marginLeft + hAdded,getHeight() - marginBottom - vAdded,getYLabelPaint());
-        canvas.drawText(getEndYLabel(),marginLeft + hAdded,marginTop + getYLabelPaint().getTextSize(),getYLabelPaint());
+        float[] entries = getAxisLeft().mEntries;
+        EasyYAxisValueFormatter formatter = (EasyYAxisValueFormatter) getAxisLeft().getValueFormatter();
+
+        canvas.drawText(formatter.getEasyFormattedValue(entries[0],getAxisLeft()),marginLeft + hAdded,getHeight() - marginBottom - vAdded,getYLabelPaint());
+        canvas.drawText(formatter.getEasyFormattedValue(entries[entries.length - 1],getAxisLeft()),marginLeft + hAdded,marginTop + getYLabelPaint().getTextSize(),getYLabelPaint());
     }
 
     private void drawXLabel(Canvas canvas, float marginBottom, float marginLeft, float marginRight) {
@@ -109,32 +110,6 @@ public class KLineChart extends BaseCombinedChart {
         }
         return mYLabelPaint;
     }
-
-
-
-    private String ensureNotNull(String str) {
-        return str == null ? "" : str;
-    }
-
-
-
-    public String getStartYLabel() {
-        return ensureNotNull(mStartYLabel);
-    }
-
-    public void setStartYLabel(String startYLabel) {
-        mStartYLabel = startYLabel;
-    }
-
-    public String getEndYLabel() {
-        return ensureNotNull(mEndYLabel);
-    }
-
-    public void setEndYLabel(String endYLabel) {
-        mEndYLabel = endYLabel;
-    }
-
-
 
     public float getMinOffsetPx(){
         return dp2px(getMinOffset());

@@ -13,15 +13,10 @@ public abstract class EasyYAxisValueFormatter implements IAxisValueFormatter {
     @Override
     public String getFormattedValue(float value, AxisBase axis) {
         String str = getEasyFormattedValue(value,axis);
-        if (value <= axis.mEntries[0]){
-            mKLineChart.setStartYLabel(str);
+        if (value <= axis.mEntries[0] || value >= axis.mEntries[axis.mEntries.length - 1]){
             return "";
         }
 
-        if (value >= axis.mEntries[3]){
-            mKLineChart.setEndYLabel(str);
-            return "";
-        }
         return str;
     }
 

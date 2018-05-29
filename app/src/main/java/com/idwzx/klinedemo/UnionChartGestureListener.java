@@ -46,9 +46,9 @@ public class UnionChartGestureListener implements OnChartGestureListener {
 
     @Override
     public void onChartLongPressed(MotionEvent me) {
+        mSrcChart.setDragEnabled(false);
         Highlight highlight = mSrcChart.getHighlightByTouchPoint(me.getX(), me.getY());
         mSrcChart.highlightValue(highlight, true);
-        mSrcChart.setDragEnabled(false);
 
         for (int index = 0;index < mUnionCharts.length;index++){
             mUnionCharts[index].setDragEnabled(false);
