@@ -6,6 +6,7 @@ import android.graphics.Paint;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.view.MotionEvent;
 
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.components.AxisBase;
@@ -26,6 +27,8 @@ import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
+import com.github.mikephil.charting.listener.ChartTouchListener;
+import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.utils.MPPointF;
 import com.github.mikephil.charting.utils.Utils;
 import com.github.mikephil.charting.utils.ViewPortHandler;
@@ -262,8 +265,54 @@ public class MainActivity extends AppCompatActivity {
 
 
         mKLineChart.setData(combinedData);
-        mKLineChart.setOnChartValueSelectedListener(new ChartValueSelectedListener(mKLineChart,
-                new BaseCombinedChart[]{mVolumeChart}));
+//        mKLineChart.setOnChartValueSelectedListener(new ChartValueSelectedListener(mKLineChart,
+//                new BaseCombinedChart[]{mVolumeChart}));
+
+        mKLineChart.setOnChartGestureListener(new OnChartGestureListener() {
+            @Override
+            public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+                mKLineChart.highlightValue(null);
+            }
+
+            @Override
+            public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+                mKLineChart.highlightValue(null);
+                mKLineChart.setDragEnabled(true);
+            }
+
+            @Override
+            public void onChartLongPressed(MotionEvent me) {
+                mKLineChart.highlightValue(mKLineChart.getHighlightByTouchPoint(me.getX(),me.getY()));
+                mKLineChart.setDragEnabled(false);
+            }
+
+            @Override
+            public void onChartDoubleTapped(MotionEvent me) {
+
+            }
+
+            @Override
+            public void onChartSingleTapped(MotionEvent me) {
+
+            }
+
+            @Override
+            public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
+                mKLineChart.setDragEnabled(true);
+                mKLineChart.highlightValue(null);
+            }
+
+            @Override
+            public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
+                mKLineChart.highlightValue(null);
+            }
+
+            @Override
+            public void onChartTranslate(MotionEvent me, float dX, float dY) {
+                mKLineChart.setDragEnabled(true);
+                mKLineChart.highlightValue(null);
+            }
+        });
 
 
         mKLineChart.setHighlightPerTapEnabled(false);
@@ -272,10 +321,10 @@ public class MainActivity extends AppCompatActivity {
         mVolumeChart = findViewById(R.id.volume_chart);
 
 
-        mKLineChart.setOnChartGestureListener(new UnionChartGestureListener(mKLineChart, new BaseCombinedChart[]{mVolumeChart}));
+//        mKLineChart.setOnChartGestureListener(new UnionChartGestureListener(mKLineChart, new BaseCombinedChart[]{mVolumeChart}));
 
-        mKLineChart.setOnChartValueSelectedListener(new ChartValueSelectedListener(mKLineChart,
-                new BaseCombinedChart[]{mVolumeChart}));
+//        mKLineChart.setOnChartValueSelectedListener(new ChartValueSelectedListener(mKLineChart,
+//                new BaseCombinedChart[]{mVolumeChart}));
 
 
         mKLineChart.setDoubleTapToZoomEnabled(false);
@@ -369,11 +418,58 @@ public class MainActivity extends AppCompatActivity {
         volumeChartData.setData(barData);
         mVolumeChart.setData(volumeChartData);
         mVolumeChart.setLeftLabel("成交量");
-        mVolumeChart.setOnChartGestureListener(new UnionChartGestureListener(mVolumeChart, new BaseCombinedChart[]{mKLineChart}));
+//        mVolumeChart.setOnChartGestureListener(new UnionChartGestureListener(mVolumeChart, new BaseCombinedChart[]{mKLineChart}));
 
-        mVolumeChart.setOnChartValueSelectedListener(new ChartValueSelectedListener(mVolumeChart,
-                new BaseCombinedChart[]{mKLineChart}));
+//        mVolumeChart.setOnChartValueSelectedListener(new ChartValueSelectedListener(mVolumeChart,
+//                new BaseCombinedChart[]{mKLineChart}));
+        mVolumeChart.setOnChartGestureListener(new OnChartGestureListener() {
+            @Override
+            public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+                mVolumeChart.highlightValue(null);
+            }
+
+            @Override
+            public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+                mVolumeChart.highlightValue(null);
+                mVolumeChart.setDragEnabled(true);
+            }
+
+            @Override
+            public void onChartLongPressed(MotionEvent me) {
+                mVolumeChart.highlightValue(mVolumeChart.getHighlightByTouchPoint(me.getX(),me.getY()));
+                mVolumeChart.setDragEnabled(false);
+            }
+
+            @Override
+            public void onChartDoubleTapped(MotionEvent me) {
+
+            }
+
+            @Override
+            public void onChartSingleTapped(MotionEvent me) {
+
+            }
+
+            @Override
+            public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
+                mVolumeChart.setDragEnabled(true);
+                mVolumeChart.highlightValue(null);
+            }
+
+            @Override
+            public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
+                mVolumeChart.highlightValue(null);
+            }
+
+            @Override
+            public void onChartTranslate(MotionEvent me, float dX, float dY) {
+                mVolumeChart.setDragEnabled(true);
+                mVolumeChart.highlightValue(null);
+            }
+        });
         mKLineChart.addUnionChart(mVolumeChart);
+
+
 
         mVolumeChart.setLeftLabelSize(Utils.convertDpToPixel(14f));
         mVolumeChart.setLeftLabelColor(Color.parseColor("#323232"));

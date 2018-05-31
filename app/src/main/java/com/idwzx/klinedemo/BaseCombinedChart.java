@@ -2,9 +2,12 @@ package com.idwzx.klinedemo;
 
 import android.content.Context;
 import android.graphics.Canvas;
+import android.graphics.Matrix;
 import android.util.AttributeSet;
 import android.view.MotionEvent;
+import android.view.View;
 
+import com.github.mikephil.charting.charts.Chart;
 import com.github.mikephil.charting.charts.CombinedChart;
 
 import java.util.ArrayList;
@@ -16,6 +19,8 @@ public abstract class BaseCombinedChart extends CombinedChart implements IBaseCh
     private boolean mLongPressing;
 
     private List<BaseCombinedChart> mChartsOfUnion;
+    private boolean mCanUnion = true;
+
 
     public BaseCombinedChart(Context context) {
         super(context);
@@ -61,6 +66,10 @@ public abstract class BaseCombinedChart extends CombinedChart implements IBaseCh
     private float mTouchY;
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+        if (mCanUnion){
+            mChartsOfUnion.get(0).setCanUnion(false);
+        }
+
         int action = event.getAction() & MotionEvent.ACTION_MASK;
 
         switch (action){
@@ -68,10 +77,6 @@ public abstract class BaseCombinedChart extends CombinedChart implements IBaseCh
             case MotionEvent.ACTION_MOVE:
                 mTouchX = event.getX();
                 mTouchY = event.getY();
-                for (int index = 0;index < mChartsOfUnion.size();index++){
-                    mChartsOfUnion.get(index).setTouchX(mTouchX);
-                    mChartsOfUnion.get(index).setTouchY(transferToUnionTouchY(mChartsOfUnion.get(index),mTouchY));
-                }
                 break;
             case MotionEvent.ACTION_UP:
                 mLongPressing = false;
@@ -81,12 +86,64 @@ public abstract class BaseCombinedChart extends CombinedChart implements IBaseCh
 
 
         if (action == MotionEvent.ACTION_UP){
-            highlightValue(null,true);
+            highlightValue(null,false);
             setDragEnabled(true);
         }
 
         boolean consumed = super.onTouchEvent(event);
+
+        if (mCanUnion){
+            mChartsOfUnion.get(0).onTouchEvent(event);
+        }
+
+        if (action == MotionEvent.ACTION_UP){
+//            highlightValue(null,false);
+            setDragEnabled(true);
+            setCanUnion(true);
+        }
+
         return consumed;
+    }
+
+    public boolean isCanUnion() {
+        return mCanUnion;
+    }
+
+    public void setCanUnion(boolean canUnion) {
+        mCanUnion = canUnion;
+    }
+
+    public void syncCharts() {
+        Matrix srcMatrix;
+        float[] srcValues = new float[9];
+        Matrix unionMatrix;
+        float[] unionValues = new float[9];
+        // get src chart translation matrix:
+        srcMatrix = getViewPortHandler().getMatrixTouch();
+        srcMatrix.getValues(srcValues);
+        // apply X axis scaling and position to dst charts:
+        for (Chart dstChart : mChartsOfUnion) {
+            if (dstChart == null) {
+                return;
+            }
+            if (dstChart.getVisibility() == View.VISIBLE) {
+                unionMatrix = dstChart.getViewPortHandler().getMatrixTouch();
+                unionMatrix.getValues(unionValues);
+
+                unionValues[Matrix.MSCALE_X] = srcValues[Matrix.MSCALE_X];
+                unionValues[Matrix.MSKEW_X] = srcValues[Matrix.MSKEW_X];
+                unionValues[Matrix.MTRANS_X] = srcValues[Matrix.MTRANS_X];
+                unionValues[Matrix.MSKEW_Y] = srcValues[Matrix.MSKEW_Y];
+                unionValues[Matrix.MSCALE_Y] = srcValues[Matrix.MSCALE_Y];
+                unionValues[Matrix.MTRANS_Y] = srcValues[Matrix.MTRANS_Y];
+                unionValues[Matrix.MPERSP_0] = srcValues[Matrix.MPERSP_0];
+                unionValues[Matrix.MPERSP_1] = srcValues[Matrix.MPERSP_1];
+                unionValues[Matrix.MPERSP_2] = srcValues[Matrix.MPERSP_2];
+
+                unionMatrix.setValues(unionValues);
+                dstChart.getViewPortHandler().refresh(unionMatrix, dstChart, true);
+            }
+        }
     }
 
     @Override

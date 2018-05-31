@@ -59,11 +59,13 @@ public class UnionChartGestureListener implements OnChartGestureListener {
 
     @Override
     public void onChartDoubleTapped(MotionEvent me) {
+        mSrcChart.highlightValue(null,true);
         syncCharts();
     }
 
     @Override
     public void onChartSingleTapped(MotionEvent me) {
+        mSrcChart.highlightValue(null,true);
         syncCharts();
     }
 
@@ -91,35 +93,36 @@ public class UnionChartGestureListener implements OnChartGestureListener {
     }
 
     public void syncCharts() {
-        Matrix srcMatrix;
-        float[] srcValues = new float[9];
-        Matrix unionMatrix;
-        float[] unionValues = new float[9];
-        // get src chart translation matrix:
-        srcMatrix = mSrcChart.getViewPortHandler().getMatrixTouch();
-        srcMatrix.getValues(srcValues);
-        // apply X axis scaling and position to dst charts:
-        for (Chart dstChart : mUnionCharts) {
-            if (dstChart == null) {
-                return;
-            }
-            if (dstChart.getVisibility() == View.VISIBLE) {
-                unionMatrix = dstChart.getViewPortHandler().getMatrixTouch();
-                unionMatrix.getValues(unionValues);
-
-                unionValues[Matrix.MSCALE_X] = srcValues[Matrix.MSCALE_X];
-                unionValues[Matrix.MSKEW_X] = srcValues[Matrix.MSKEW_X];
-                unionValues[Matrix.MTRANS_X] = srcValues[Matrix.MTRANS_X];
-                unionValues[Matrix.MSKEW_Y] = srcValues[Matrix.MSKEW_Y];
-                unionValues[Matrix.MSCALE_Y] = srcValues[Matrix.MSCALE_Y];
-                unionValues[Matrix.MTRANS_Y] = srcValues[Matrix.MTRANS_Y];
-                unionValues[Matrix.MPERSP_0] = srcValues[Matrix.MPERSP_0];
-                unionValues[Matrix.MPERSP_1] = srcValues[Matrix.MPERSP_1];
-                unionValues[Matrix.MPERSP_2] = srcValues[Matrix.MPERSP_2];
-
-                unionMatrix.setValues(unionValues);
-                dstChart.getViewPortHandler().refresh(unionMatrix, dstChart, true);
-            }
-        }
+        return;
+//        Matrix srcMatrix;
+//        float[] srcValues = new float[9];
+//        Matrix unionMatrix;
+//        float[] unionValues = new float[9];
+//        // get src chart translation matrix:
+//        srcMatrix = mSrcChart.getViewPortHandler().getMatrixTouch();
+//        srcMatrix.getValues(srcValues);
+//        // apply X axis scaling and position to dst charts:
+//        for (Chart dstChart : mUnionCharts) {
+//            if (dstChart == null) {
+//                return;
+//            }
+//            if (dstChart.getVisibility() == View.VISIBLE) {
+//                unionMatrix = dstChart.getViewPortHandler().getMatrixTouch();
+//                unionMatrix.getValues(unionValues);
+//
+//                unionValues[Matrix.MSCALE_X] = srcValues[Matrix.MSCALE_X];
+//                unionValues[Matrix.MSKEW_X] = srcValues[Matrix.MSKEW_X];
+//                unionValues[Matrix.MTRANS_X] = srcValues[Matrix.MTRANS_X];
+//                unionValues[Matrix.MSKEW_Y] = srcValues[Matrix.MSKEW_Y];
+//                unionValues[Matrix.MSCALE_Y] = srcValues[Matrix.MSCALE_Y];
+//                unionValues[Matrix.MTRANS_Y] = srcValues[Matrix.MTRANS_Y];
+//                unionValues[Matrix.MPERSP_0] = srcValues[Matrix.MPERSP_0];
+//                unionValues[Matrix.MPERSP_1] = srcValues[Matrix.MPERSP_1];
+//                unionValues[Matrix.MPERSP_2] = srcValues[Matrix.MPERSP_2];
+//
+//                unionMatrix.setValues(unionValues);
+//                dstChart.getViewPortHandler().refresh(unionMatrix, dstChart, true);
+//            }
+//        }
     }
 }
