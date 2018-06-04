@@ -36,8 +36,16 @@ public class KLineChart extends BaseCombinedChart {
     }
 
     @Override
-    public float transferToUnionTouchY(BaseCombinedChart chart,float srcTouchY) {
-        return srcTouchY - getHeight();
+    public float transferToUnionTouchY(BaseCombinedChart chart, float srcTouchY) {
+        if (chart instanceof VolumeOrAmountChart) {
+            return srcTouchY - getHeight();
+        } else if (chart instanceof IndexChart) {
+            int totalHeight = getUnionChartHeight(mVolumeOrAmountChart) + getHeight();
+            return srcTouchY - totalHeight;
+        }else {
+            return srcTouchY - getHeight();
+        }
+
     }
 
 
@@ -72,8 +80,8 @@ public class KLineChart extends BaseCombinedChart {
         float[] entries = getAxisLeft().mEntries;
         EasyYAxisValueFormatter formatter = (EasyYAxisValueFormatter) getAxisLeft().getValueFormatter();
 
-        canvas.drawText(formatter.getEasyFormattedValue(entries[0],getAxisLeft()),marginLeft + hAdded,getHeight() - marginBottom - vAdded,getYLabelPaint());
-        canvas.drawText(formatter.getEasyFormattedValue(entries[entries.length - 1],getAxisLeft()),marginLeft + hAdded,marginTop + getYLabelPaint().getTextSize(),getYLabelPaint());
+        canvas.drawText(formatter.getEasyFormattedValue(entries[0], getAxisLeft()), marginLeft + hAdded, getHeight() - marginBottom - vAdded, getYLabelPaint());
+        canvas.drawText(formatter.getEasyFormattedValue(entries[entries.length - 1], getAxisLeft()), marginLeft + hAdded, marginTop + getYLabelPaint().getTextSize(), getYLabelPaint());
     }
 
     private void drawXLabel(Canvas canvas, float marginBottom, float marginLeft, float marginRight) {
@@ -81,20 +89,20 @@ public class KLineChart extends BaseCombinedChart {
 
         float labelY = getHeight() - (marginBottom - getXLabelPaint().getTextSize()) / 2;
 
-        canvas.drawText(getXAxis().getFormattedLabel(0),marginLeft,labelY,getXLabelPaint());
+        canvas.drawText(getXAxis().getFormattedLabel(0), marginLeft, labelY, getXLabelPaint());
 
         String endXLabel = getXAxis().getFormattedLabel(labelCount - 1);
 
-        canvas.drawText(endXLabel,getWidth() - marginRight - getXLabelPaint().measureText(endXLabel),labelY,getXLabelPaint());
+        canvas.drawText(endXLabel, getWidth() - marginRight - getXLabelPaint().measureText(endXLabel), labelY, getXLabelPaint());
     }
 
     private float dp2px(float dp) {
-        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP,dp,getResources().getDisplayMetrics());
+        return TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, dp, getResources().getDisplayMetrics());
     }
 
 
     public Paint getXLabelPaint() {
-        if (mXLabelPaint == null){
+        if (mXLabelPaint == null) {
             mXLabelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             mXLabelPaint.setColor(getXAxis().getTextColor());
             mXLabelPaint.setTextSize(getXAxis().getTextSize());
@@ -103,7 +111,7 @@ public class KLineChart extends BaseCombinedChart {
     }
 
     public Paint getYLabelPaint() {
-        if (mYLabelPaint == null){
+        if (mYLabelPaint == null) {
             mYLabelPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
             mYLabelPaint.setColor(getAxisLeft().getTextColor());
             mYLabelPaint.setTextSize(getAxisLeft().getTextSize());
@@ -111,7 +119,7 @@ public class KLineChart extends BaseCombinedChart {
         return mYLabelPaint;
     }
 
-    public float getMinOffsetPx(){
+    public float getMinOffsetPx() {
         return dp2px(getMinOffset());
     }
 

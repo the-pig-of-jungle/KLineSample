@@ -27,6 +27,8 @@ public class VolumeOrAmountChart extends BaseCombinedChart {
         super(context, attrs, defStyle);
     }
 
+
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
@@ -85,6 +87,10 @@ public class VolumeOrAmountChart extends BaseCombinedChart {
     }
 
 
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        return super.onTouchEvent(event);
+    }
 
     @Override
     public float transferToUnionTouchY(BaseCombinedChart chart,float srcTouchY) {

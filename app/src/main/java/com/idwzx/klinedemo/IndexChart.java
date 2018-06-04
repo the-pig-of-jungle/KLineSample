@@ -18,6 +18,17 @@ public class IndexChart extends BaseCombinedChart {
 
     @Override
     public float transferToUnionTouchY(BaseCombinedChart chart, float srcTouchY) {
-        return 0;
+
+        if (chart instanceof KLineChart){
+            int totalHeight = getUnionChartHeight(mKLineChart) + getUnionChartHeight(mVolumeOrAmountChart);
+            return srcTouchY + totalHeight;
+        }
+
+        if (chart instanceof VolumeOrAmountChart){
+            return srcTouchY + getUnionChartHeight(mVolumeOrAmountChart);
+        }
+
+        return srcTouchY;
+
     }
 }

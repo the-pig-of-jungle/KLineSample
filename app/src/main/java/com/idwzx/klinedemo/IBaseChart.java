@@ -1,10 +1,17 @@
 package com.idwzx.klinedemo;
 
-public interface IBaseChart {
-    boolean isLongPressing();
-    void setLongPressing(boolean longPressing);
+import java.util.List;
 
-    void addUnionChart(BaseCombinedChart baseCombinedChart);
+public interface IBaseChart {
+    
+    float DEFAULT_CHART_BORDER_WIDTH = 0.3f;
+    float DEFAULT_MAX_SCALE_X = 9f;
+    float DEFAULT_INIT_SCALE_X = 4f;
+
+
+    boolean isLongPressing();
+
+    void setLongPressing(boolean longPressing);
 
     float getTouchX();
 
@@ -14,5 +21,5 @@ public interface IBaseChart {
 
     void setTouchY(float touchY);
 
-    float transferToUnionTouchY(BaseCombinedChart chart,float srcTouchY);
+    float transferToUnionTouchY(BaseCombinedChart chart, float srcTouchY);
 }
