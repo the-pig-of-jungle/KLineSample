@@ -22,4 +22,5 @@ public interface IBaseChart {
     void setTouchY(float touchY);
 
     float transferToUnionTouchY(BaseCombinedChart chart, float srcTouchY);
+
 }

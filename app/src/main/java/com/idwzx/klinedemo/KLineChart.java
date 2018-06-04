@@ -36,13 +36,19 @@ public class KLineChart extends BaseCombinedChart {
     }
 
     @Override
+    protected void initSomething() {
+        super.initSomething();
+        setDrawOrder(new DrawOrder[]{DrawOrder.CANDLE, DrawOrder.LINE});
+    }
+
+    @Override
     public float transferToUnionTouchY(BaseCombinedChart chart, float srcTouchY) {
         if (chart instanceof VolumeOrAmountChart) {
             return srcTouchY - getHeight();
         } else if (chart instanceof IndexChart) {
             int totalHeight = getUnionChartHeight(mVolumeOrAmountChart) + getHeight();
             return srcTouchY - totalHeight;
-        }else {
+        } else {
             return srcTouchY - getHeight();
         }
 
@@ -122,5 +128,6 @@ public class KLineChart extends BaseCombinedChart {
     public float getMinOffsetPx() {
         return dp2px(getMinOffset());
     }
+
 
 }

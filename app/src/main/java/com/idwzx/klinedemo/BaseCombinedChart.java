@@ -25,7 +25,6 @@ public abstract class BaseCombinedChart extends CombinedChart implements IBaseCh
 
     protected boolean mCanUnionOthers;
 
-
     public BaseCombinedChart(Context context) {
         super(context);
         initSomething();
@@ -80,15 +79,25 @@ public abstract class BaseCombinedChart extends CombinedChart implements IBaseCh
         mLongPressing = longPressing;
     }
 
+    @Override
+    public boolean dispatchTouchEvent(MotionEvent ev) {
+        if (!mCanUnionOthers){
+            return false;
+        }
+        return super.dispatchTouchEvent(ev);
+    }
+
     private float mTouchX;
     private float mTouchY;
 
     @Override
     public boolean onTouchEvent(MotionEvent event) {
+
         int action = event.getAction() & MotionEvent.ACTION_MASK;
         switch (action) {
             case MotionEvent.ACTION_DOWN:
             case MotionEvent.ACTION_MOVE:
+                mTouchX = event.getX();
                 if (mCanUnionOthers) {
                     mTouchY = event.getY();
                 }

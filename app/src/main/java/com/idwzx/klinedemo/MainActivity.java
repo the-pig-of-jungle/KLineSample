@@ -53,9 +53,6 @@ public class MainActivity extends AppCompatActivity {
         mIndexChart = findViewById(R.id.index_chart);
 
 
-        ChartUtils.processChart(mKLineChart);
-
-
         ChartUtils.processKLineYAxisLeft(mKLineChart);
 
 
