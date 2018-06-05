@@ -130,4 +130,9 @@ public class KLineChart extends BaseCombinedChart {
     }
 
 
+    public void setChartData(List<IKLineEntry> data){
+
+    }
+
+
 }
